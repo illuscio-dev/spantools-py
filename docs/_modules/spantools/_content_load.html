@@ -1,0 +1,292 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>spantools._content_load &mdash; spantools 0.2.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> spantools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">spantools</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>spantools._content_load</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for spantools._content_load</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">marshmallow</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Mapping</span>
+
+<span class="kn">from</span> <span class="nn">._mimetype</span> <span class="kn">import</span> <span class="n">MimeType</span><span class="p">,</span> <span class="n">MimeTypeTolerant</span>
+<span class="kn">from</span> <span class="nn">._errors</span> <span class="kn">import</span> <span class="n">ContentDecodeError</span><span class="p">,</span> <span class="n">ContentTypeUnknownError</span><span class="p">,</span> <span class="n">NoContentError</span>
+<span class="kn">from</span> <span class="nn">._encoders</span> <span class="kn">import</span> <span class="n">DecoderType</span><span class="p">,</span> <span class="n">DEFAULT_DECODERS</span>
+
+
+<span class="n">DecoderIndexType</span> <span class="o">=</span> <span class="n">Mapping</span><span class="p">[</span><span class="n">MimeTypeTolerant</span><span class="p">,</span> <span class="n">DecoderType</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">_sniff_content</span><span class="p">(</span><span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">decoders</span><span class="p">:</span> <span class="n">DecoderIndexType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="n">content_mapping</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">mimetype</span><span class="p">,</span> <span class="n">decoder</span> <span class="ow">in</span> <span class="n">decoders</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">mimetype</span> <span class="ow">is</span> <span class="n">MimeType</span><span class="o">.</span><span class="n">TEXT</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">content_mapping</span> <span class="o">=</span> <span class="n">decoder</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">break</span>
+
+    <span class="k">if</span> <span class="n">content_mapping</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ContentDecodeError</span><span class="p">(</span><span class="s2">&quot;Could not deserialize content&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">content_mapping</span>
+
+
+<span class="k">def</span> <span class="nf">_load_content_by_mimetype</span><span class="p">(</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span> <span class="n">mimetype</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">MimeType</span><span class="p">],</span> <span class="n">decoders</span><span class="p">:</span> <span class="n">DecoderIndexType</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mimetype</span> <span class="o">=</span> <span class="n">MimeType</span><span class="o">.</span><span class="n">from_name</span><span class="p">(</span><span class="n">mimetype</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">deserializer</span> <span class="o">=</span> <span class="n">decoders</span><span class="p">[</span><span class="n">mimetype</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ContentTypeUnknownError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown mimetype: </span><span class="si">{mimetype}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">deserializer</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ContentDecodeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error occurred while decoding content as </span><span class="si">{mimetype}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="decode_content"><a class="viewcode-back" href="../../index.html#spantools.decode_content">[docs]</a><span class="k">def</span> <span class="nf">decode_content</span><span class="p">(</span>
+    <span class="n">content</span><span class="p">:</span> <span class="nb">bytes</span><span class="p">,</span>
+    <span class="n">mimetype</span><span class="p">:</span> <span class="n">MimeTypeTolerant</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">data_schema</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">marshmallow</span><span class="o">.</span><span class="n">Schema</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">allow_sniff</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">decoders</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DecoderIndexType</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads content by decoder / schema from received mimetype.</span>
+
+<span class="sd">    :param content: Received binary body.</span>
+<span class="sd">    :param mimetype: mimetype info if known.</span>
+<span class="sd">    :param data_schema: marshmallow schema to use to load data to model / object</span>
+<span class="sd">    :param allow_sniff: If mimetype is unavailable, whether to attempt to load content</span>
+<span class="sd">        anyway.</span>
+<span class="sd">    :param decoders: Custom set of decoders to use.</span>
+<span class="sd">    :return: (loaded data object, loaded mimetype) tuple.</span>
+
+<span class="sd">    :raises ContentTypeUnknownError: If a method for decoding / validating the</span>
+<span class="sd">        content is unknown or unregistered, and ``allow_sniff`` is False.</span>
+<span class="sd">    :raises ContentDecodeError: If error occurs when decoding content or no registered.</span>
+<span class="sd">        decoders succeed if ``allow_sniff`` is True</span>
+<span class="sd">    :raises NoContentError: If no content is passed to be decoded. This error is</span>
+<span class="sd">        inherited from ContentDecodeError, so catching ContentDecodeError also catches</span>
+<span class="sd">        NoContentError.</span>
+<span class="sd">    :raises marshmallow.ValidationError: If raised while loading content via</span>
+<span class="sd">        ``data_schema``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">content</span> <span class="o">==</span> <span class="sa">b</span><span class="s2">&quot;&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">NoContentError</span><span class="p">(</span><span class="s2">&quot;No content to decode.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">decoders</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">decoders</span> <span class="o">=</span> <span class="n">DEFAULT_DECODERS</span>
+
+    <span class="c1"># If no mimetype was passed, we can go through and attempt to load it blind (sniff)</span>
+    <span class="k">if</span> <span class="n">mimetype</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">allow_sniff</span><span class="p">:</span>
+        <span class="n">content_mimetype</span> <span class="o">=</span> <span class="n">_sniff_content</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">decoders</span><span class="o">=</span><span class="n">decoders</span><span class="p">)</span>
+    <span class="c1"># Otherwise if we are not allowing that, raise a value error.</span>
+    <span class="k">elif</span> <span class="n">mimetype</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ContentTypeUnknownError</span><span class="p">(</span><span class="s2">&quot;No mimetype supplied.&quot;</span><span class="p">)</span>
+    <span class="c1"># Or if there is an explicit mimetyoe, use its deserializer</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">content_mimetype</span> <span class="o">=</span> <span class="n">_load_content_by_mimetype</span><span class="p">(</span>
+            <span class="n">content</span><span class="p">,</span> <span class="n">mimetype</span><span class="o">=</span><span class="n">mimetype</span><span class="p">,</span> <span class="n">decoders</span><span class="o">=</span><span class="n">decoders</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Use the marshmallow schema to load the data object.</span>
+    <span class="k">if</span> <span class="n">data_schema</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">content_loaded</span> <span class="o">=</span> <span class="n">data_schema</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">content_mimetype</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">content_loaded</span> <span class="o">=</span> <span class="n">content_mimetype</span>
+
+    <span class="k">return</span> <span class="n">content_loaded</span><span class="p">,</span> <span class="n">content_mimetype</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright &#39;2018, Illuscio&#39;
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
