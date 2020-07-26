@@ -10,6 +10,7 @@ class MimeType(Enum):
     JSON = "application/json"
     YAML = "application/yaml"
     BSON = "application/bson"
+    PROTO = "application/protobuf"
     TEXT = "text/plain"
 
     @staticmethod

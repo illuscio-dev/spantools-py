@@ -176,11 +176,22 @@ def bson_decode(content: bytes) -> Union[RawBSONDocument, List[RawBSONDocument]]
         return RawBSONDocument(content)
 
 
+# The proto encoders and decoders will just pass bytes through, since marshalling and
+# unmarshalling will be handled by the schema
+def proto_encode(data: bytes) -> bytes:
+    return data
+
+
+def proto_decode(content: bytes) -> bytes:
+    return content
+
+
 DEFAULT_ENCODERS: Dict[MimeTypeTolerant, EncoderType] = {
     MimeType.JSON: json_encode,
     MimeType.BSON: bson_encode,
     MimeType.YAML: yaml_encode,
     MimeType.TEXT: lambda x: x.encode(),
+    MimeType.PROTO: proto_encode,
 }
 
 DEFAULT_DECODERS: Dict[MimeTypeTolerant, DecoderType] = {
@@ -188,4 +199,5 @@ DEFAULT_DECODERS: Dict[MimeTypeTolerant, DecoderType] = {
     MimeType.BSON: bson_decode,
     MimeType.YAML: yaml_decode,
     MimeType.TEXT: lambda x: x.decode(),
+    MimeType.PROTO: proto_decode,
 }

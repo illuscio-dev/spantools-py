@@ -1,9 +1,11 @@
 import marshmallow
-from typing import Optional, Any, Union, Mapping, MutableMapping, Callable
+import google.protobuf.message
+from typing import Optional, Any, Union, Mapping, MutableMapping, Callable, Type
 
 from ._mimetype import MimeType, MimeTypeTolerant
 from ._errors import ContentTypeUnknownError, ContentEncodeError
 from ._encoders import EncoderType, DEFAULT_ENCODERS
+from ._typing import DataSchemaType
 
 
 EncoderIndexType = Mapping[MimeTypeTolerant, EncoderType]
@@ -12,14 +14,20 @@ EncoderIndexType = Mapping[MimeTypeTolerant, EncoderType]
 def _auto_mimetype(
     content: Optional[Any],
     mimetype: MimeTypeTolerant,
-    data_schema: Optional[marshmallow.Schema],
+    data_schema: Optional[DataSchemaType],
 ) -> MimeTypeTolerant:
     """
     Supplies automatically determined mimetype for serialization if none was explicitly
     declared (will be either JSON or TEXT)
     """
     if mimetype is None:
-        if data_schema is not None or isinstance(content, (Mapping, list)):
+        if isinstance(data_schema, type) and issubclass(
+            data_schema, google.protobuf.message.Message
+        ):
+            mimetype = MimeType.PROTO
+        elif isinstance(data_schema, marshmallow.Schema) or isinstance(
+            content, (Mapping, list)
+        ):
             mimetype = MimeType.JSON
         elif isinstance(content, str):
             mimetype = MimeType.TEXT
@@ -114,11 +122,25 @@ def _get_mimetype_encoder(
     return encoder
 
 
+def _generate_protobuf_encoder(
+    data_schema: Type[google.protobuf.message.Message],
+) -> EncoderType:
+    def encoder(content: Any) -> bytes:
+        if not isinstance(content, data_schema):
+            raise ContentEncodeError(
+                f"proto type expected: {data_schema}, got: {type(content)}"
+            )
+
+        return content.SerializeToString()
+
+    return encoder
+
+
 def _encode_known_mimetype(
     content: Optional[Any],
     mimetype: MimeTypeTolerant,
     headers: MutableMapping[str, str],
-    data_schema: Optional[marshmallow.Schema],
+    data_schema: Optional[DataSchemaType],
     validate: bool,
     encoders: EncoderIndexType,
 ) -> bytes:
@@ -132,9 +154,12 @@ def _encode_known_mimetype(
         MimeType.add_to_headers(headers, mimetype)
 
     if data_schema is not None:
-        encoder = _generate_schema_encoder(
-            data_schema=data_schema, validate=validate, mimetype_encoder=encoder
-        )
+        if isinstance(data_schema, marshmallow.Schema):
+            encoder = _generate_schema_encoder(
+                data_schema=data_schema, validate=validate, mimetype_encoder=encoder
+            )
+        else:
+            encoder = _generate_protobuf_encoder(data_schema)
 
     try:
         content = encoder(content)
@@ -150,7 +175,7 @@ def encode_content(
     content: Optional[Any],
     mimetype: MimeTypeTolerant = None,
     headers: Optional[MutableMapping[str, str]] = None,
-    data_schema: Optional[marshmallow.Schema] = None,
+    data_schema: Optional[DataSchemaType] = None,
     validate: bool = False,
     encoders: Optional[EncoderIndexType] = None,
 ) -> bytes:
