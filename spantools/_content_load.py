@@ -4,6 +4,7 @@ from typing import Any, Union, Optional, Tuple, Mapping
 from ._mimetype import MimeType, MimeTypeTolerant
 from ._errors import ContentDecodeError, ContentTypeUnknownError, NoContentError
 from ._encoders import DecoderType, DEFAULT_DECODERS
+from ._typing import DataSchemaType
 
 
 DecoderIndexType = Mapping[MimeTypeTolerant, DecoderType]
@@ -13,7 +14,8 @@ def _sniff_content(content: bytes, decoders: DecoderIndexType) -> Any:
     content_mapping = None
 
     for mimetype, decoder in decoders.items():
-        if mimetype is MimeType.TEXT:
+        # both text and protobuf are non-sniffable.
+        if mimetype in (MimeType.TEXT, MimeType.PROTO):
             continue
 
         try:
@@ -51,7 +53,7 @@ def _load_content_by_mimetype(
 def decode_content(
     content: bytes,
     mimetype: MimeTypeTolerant = None,
-    data_schema: Optional[marshmallow.Schema] = None,
+    data_schema: Optional[DataSchemaType] = None,
     allow_sniff: bool = False,
     decoders: Optional[DecoderIndexType] = None,
 ) -> Tuple[Optional[Any], Optional[Any]]:
@@ -82,7 +84,7 @@ def decode_content(
     if decoders is None:
         decoders = DEFAULT_DECODERS
 
-    # If no mimetype was passed, we can go through and attempt to load it blind (sniff)
+    # If no mimetype was passed, we can go through and attempt to load it blind (sniff).
     if mimetype is None and allow_sniff:
         content_mimetype = _sniff_content(content, decoders=decoders)
     # Otherwise if we are not allowing that, raise a value error.
@@ -96,7 +98,11 @@ def decode_content(
 
     # Use the marshmallow schema to load the data object.
     if data_schema is not None:
-        content_loaded = data_schema.load(content_mimetype)
+        if isinstance(data_schema, marshmallow.Schema):
+            content_loaded = data_schema.load(content_mimetype)
+        else:
+            content_loaded = data_schema()
+            content_loaded.ParseFromString(content)
     else:
         content_loaded = content_mimetype
 

@@ -14,6 +14,7 @@ from bson import BSON, Decimal128
 from bson.raw_bson import RawBSONDocument
 from dataclasses import dataclass, field
 from typing import Mapping, List, Dict, Any
+from proto import Echo
 
 from spantools import (
     encode_content,
@@ -35,15 +36,15 @@ def dt_factory():
 
 
 @dataclass
-class TestData:
+class DataToTest:
     string: str = "test string"
     num: int = 10
     id: uuid.UUID = field(default_factory=uuid.uuid4)
     dt: datetime.datetime = field(default_factory=dt_factory)
 
 
-@grahamcracker.schema_for(TestData)
-class TestSchema(grahamcracker.DataSchema[TestData]):
+@grahamcracker.schema_for(DataToTest)
+class SchemaToTest(grahamcracker.DataSchema[DataToTest]):
     @marshmallow.validates("num")
     def must_be_10(self, value: int, **kwargs):
         if value != 10:
@@ -140,8 +141,8 @@ class TestBasicEncoding:
     @pytest.mark.parametrize("mimetype", data_mimetypes_for_parametrize)
     def test_schema_round_trip(self, mimetype):
 
-        data = TestData()
-        schema = TestSchema()
+        data = DataToTest()
+        schema = SchemaToTest()
         headers = dict()
 
         encoded = encode_content(
@@ -160,7 +161,7 @@ class TestBasicEncoding:
             encoded, mimetype=mimetype, data_schema=schema, allow_sniff=True
         )
 
-        assert isinstance(loaded, TestData)
+        assert isinstance(loaded, DataToTest)
         assert loaded == data
 
         assert isinstance(decoded, Mapping)
@@ -232,8 +233,8 @@ class TestBasicEncoding:
         assert encoded == "Some Bin Data".encode()
 
     def test_validate_success(self):
-        data = TestData()
-        schema = TestSchema()
+        data = DataToTest()
+        schema = SchemaToTest()
 
         encode_content(data, mimetype=MimeType.JSON, data_schema=schema, validate=True)
 
@@ -282,8 +283,8 @@ class TestErrors:
             encode_content({"key": "dict"}, "application/unknown")
 
     def test_unknown_mimetype_validation_error(self):
-        data = TestData()
-        schema = TestSchema()
+        data = DataToTest()
+        schema = SchemaToTest()
 
         with pytest.raises(marshmallow.ValidationError):
             encode_content(
@@ -291,8 +292,8 @@ class TestErrors:
             )
 
     def test_validate_failure(self):
-        data = TestData()
-        schema = TestSchema()
+        data = DataToTest()
+        schema = SchemaToTest()
 
         data.num = 11
 
@@ -371,3 +372,23 @@ class TestErrors:
         """
         with pytest.raises(ContentDecodeError):
             decode_content(b"")
+
+    def test_proto_schema_round_trip(self):
+        """
+        Tests that we can use protobuf classes as schemas.
+        """
+
+        echo = Echo(message="some message")
+
+        serialized = encode_content(echo, mimetype=MimeType.PROTO, data_schema=Echo)
+
+        assert isinstance(serialized, bytes)
+
+        deserialized, raw = decode_content(serialized, MimeType.PROTO, Echo)
+
+        assert isinstance(deserialized, Echo)
+        assert echo.message == "some message"
+        assert echo is not deserialized
+
+        assert isinstance(raw, bytes)
+        assert raw == serialized
