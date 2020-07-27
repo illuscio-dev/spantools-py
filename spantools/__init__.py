@@ -8,7 +8,7 @@ from ._models import Error, PagingReq, PagingResp
 from ._content_dump import encode_content, EncoderIndexType
 from ._content_load import decode_content, DecoderIndexType
 from ._utils import convert_params_headers
-from ._typing import RecordType, MimeTypeTolerant
+from ._typing import RecordType, MimeTypeTolerant, DataSchemaType
 from ._errors import (
     SpanError,
     ContentEncodeError,
@@ -24,6 +24,7 @@ from ._errors import (
     MimeTypeTolerant,  # type: ignore
     EncoderType,  # type: ignore
     DecoderType,  # type: ignore
+    DataSchemaType,
     encode_content,
     decode_content,
     convert_params_headers,
