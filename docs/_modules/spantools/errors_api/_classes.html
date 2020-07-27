@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>spantools.errors_api._classes &mdash; spantools 0.2.3 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home" alt="Documentation Home"> spantools
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.2.3
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">spantools</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+        
+      <li>spantools.errors_api._classes</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for spantools.errors_api._classes</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Type</span>
+
+<span class="kn">from</span> <span class="nn">.._errors</span> <span class="kn">import</span> <span class="n">SpanError</span>
+
+
+<div class="viewcode-block" id="APIError"><a class="viewcode-back" href="../../../index.html#spantools.errors_api.APIError">[docs]</a><span class="k">class</span> <span class="nc">APIError</span><span class="p">(</span><span class="n">SpanError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base error returned by SpanAPI in http responses. Must have a unique code.&quot;&quot;&quot;</span>
+
+    <span class="n">http_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">501</span>
+    <span class="n">api_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">error_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">error_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">send_media</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Base error returned by SpanAPI in http responses. Must have a unique code.</span>
+
+<span class="sd">        :param message: Message to be sent back to client.</span>
+<span class="sd">        :param error_data: JSON data to be encoded in headers.</span>
+<span class="sd">        :param error_id: Assigned uuid for error.</span>
+<span class="sd">        :param send_media: Whether to attempt to send a json payload in the response.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">error_id</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_data</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="n">error_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span> <span class="o">=</span> <span class="n">error_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_media</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="n">send_media</span></div>
+
+
+<div class="viewcode-block" id="InvalidMethodError"><a class="viewcode-back" href="../../../index.html#spantools.errors_api.InvalidMethodError">[docs]</a><span class="k">class</span> <span class="nc">InvalidMethodError</span><span class="p">(</span><span class="n">APIError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Invalid method requested from endpoint&quot;&quot;&quot;</span>
+
+    <span class="n">http_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">405</span>
+    <span class="n">api_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1001</span></div>
+
+
+<div class="viewcode-block" id="NothingToReturnError"><a class="viewcode-back" href="../../../index.html#spantools.errors_api.NothingToReturnError">[docs]</a><span class="k">class</span> <span class="nc">NothingToReturnError</span><span class="p">(</span><span class="n">APIError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;No Data to Return&quot;&quot;&quot;</span>
+
+    <span class="n">http_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="n">api_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1002</span></div>
+
+
+<div class="viewcode-block" id="RequestValidationError"><a class="viewcode-back" href="../../../index.html#spantools.errors_api.RequestValidationError">[docs]</a><span class="k">class</span> <span class="nc">RequestValidationError</span><span class="p">(</span><span class="n">APIError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Request Data Does not match schema&quot;&quot;&quot;</span>
+
+    <span class="n">http_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="n">api_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1003</span></div>
+
+
+<div class="viewcode-block" id="APILimitError"><a class="viewcode-back" href="../../../index.html#spantools.errors_api.APILimitError">[docs]</a><span class="k">class</span> <span class="nc">APILimitError</span><span class="p">(</span><span class="n">APIError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Too many items for batch request&quot;&quot;&quot;</span>
+
+    <span class="n">http_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="n">api_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1004</span></div>
+
+
+<div class="viewcode-block" id="ResponseValidationError"><a class="viewcode-back" href="../../../index.html#spantools.errors_api.ResponseValidationError">[docs]</a><span class="k">class</span> <span class="nc">ResponseValidationError</span><span class="p">(</span><span class="n">APIError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Server encountered error while validating response.&quot;&quot;&quot;</span>
+
+    <span class="n">http_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">400</span>
+    <span class="n">api_code</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1005</span></div>
+
+
+<span class="n">ERRORS_LIST</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">APIError</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">APIError</span><span class="p">,</span>
+    <span class="n">InvalidMethodError</span><span class="p">,</span>
+    <span class="n">NothingToReturnError</span><span class="p">,</span>
+    <span class="n">RequestValidationError</span><span class="p">,</span>
+    <span class="n">APILimitError</span><span class="p">,</span>
+    <span class="n">ResponseValidationError</span><span class="p">,</span>
+<span class="p">]</span>
+<span class="sd">&quot;&quot;&quot;List of all APIError Classes&quot;&quot;&quot;</span>
+
+
+<span class="n">ERRORS_INDEXED</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Type</span><span class="p">[</span><span class="n">APIError</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span><span class="n">e</span><span class="o">.</span><span class="n">api_code</span><span class="p">:</span> <span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">ERRORS_LIST</span><span class="p">}</span>
+<span class="sd">&quot;&quot;&quot;All APIError exceptions indexed by their api error code.&quot;&quot;&quot;</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright &#39;2018, Illuscio&#39;
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
